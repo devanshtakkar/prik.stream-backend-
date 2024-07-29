@@ -44,6 +44,8 @@ app.get("/search", async (req, res) => {
         res.status(401).json({ err: "No movie name is provided" });
         return;
     }
+
+    let omdbkey = envVariables.OMDB_Key as string;
     const params: {
         s: string;
         apikey: string;
@@ -51,7 +53,7 @@ app.get("/search", async (req, res) => {
         page?: string;
     } = {
         s: queryParams.movie,
-        apikey: envVariables.OMDB_Key as string,
+        apikey: omdbkey,
         type: "movie",
     };
 
