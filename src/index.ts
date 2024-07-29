@@ -23,6 +23,7 @@ interface EnvironmentVariables extends EnvVar {
 }
 const omdbUrl = "http://www.omdbapi.com";
 let envVariables = process.env as EnvironmentVariables;
+console.log(envVariables)
 
 const openai = new OpenAI({
     apiKey: envVariables.OPENAI,
