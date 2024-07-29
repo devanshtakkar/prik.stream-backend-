@@ -78,5 +78,6 @@ export interface NewUser{
 
 export interface SaveMovieReq{
     email?: string
+    name: string
     movie: GptSuggestedMovie
 }

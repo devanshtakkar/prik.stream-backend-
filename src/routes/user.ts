@@ -13,7 +13,11 @@ app.use(express.json());
 
 app.get("/", async (req, res) => {
     try {
-        let users = await prisma.user.findMany();
+        let users = await prisma.user.findMany({
+            include: {
+                savedMovies: true,
+            },
+        });
         res.json(users);
         return;
     } catch {
@@ -46,11 +50,12 @@ app.post("/movie", async (req, res) => {
                     data: {
                         email: validatedEmail,
                         password: "password",
-                        name: "John Doe",
+                        name: body.name,
                         savedMovies: {
                             create: {
                                 title: movie.Title,
                                 director: movie.Director,
+                                poster: movie.Poster,
                                 year: movie.Year,
                                 brief_reason: movie.brief_reason,
                                 imdbID: movie.imdbID,
@@ -63,11 +68,12 @@ app.post("/movie", async (req, res) => {
                 });
 
                 console.log(newSave);
-                res.status(201).json(newSave);
+                res.status(201).json(newSave.savedMovies);
             } else {
                 let newSave = await prisma.savedMovie.create({
                     data: {
                         title: movie.Title,
+                        poster: movie.Poster,
                         director: movie.Director,
                         year: movie.Year,
                         brief_reason: movie.brief_reason,
@@ -92,31 +98,30 @@ interface DeleteMovieReqMovieDetails extends GptSuggestedMovie {
     id: number;
 }
 
-interface DeleteMovieReq extends SaveMovieReq {
+interface DeleteMovieReq {
+    userId: number
     movie: DeleteMovieReqMovieDetails;
 }
 
 app.delete("/movie", async (req, res) => {
     let body: DeleteMovieReq | undefined = req.body;
+    console.log(body)
     if (!body) {
         res.status(401).json({ err: "No request body provided" });
         return;
     }
-    if ("email" in body) {
+    if ("userId" in body) {
         let movie = body.movie;
-        //Joi validate object
-        let joiEmail = Joi.string().email();
         try {
-            const validatedEmail = await joiEmail.validateAsync(body.email);
             let user = await prisma.user.findUnique({
                 where: {
-                    email: validatedEmail,
+                    id: body.userId,
                 },
             });
             if (!user) {
                 res.status(401).json({ err: "This user does not exist" });
             } else {
-                let deleteMovie = prisma.savedMovie.delete({
+                let deleteMovie = await prisma.savedMovie.delete({
                     where: {
                         id: movie.id,
                     },
@@ -135,35 +140,24 @@ app.delete("/movie", async (req, res) => {
 });
 
 app.get("/movies", async (req, res) => {
-    let body:
-        | {
-              email: string;
-              id: number | undefined;
-          }
-        | undefined = req.body;
-    if (!body) {
-        res.status(401).json({ err: "No request body provided" });
-        return;
-    }
-    if ("email" in body) {
+    let queryParams = req.query;
+    let userID = queryParams?.userID;
+    if (userID) {
         try {
-            let user = await prisma.user.findFirst({
-                where: {
-                    email: body.email,
-                },
-            });
-            if (!user) {
+            if (!userID) {
                 res.status(401).json({ err: "No such user exists" });
                 return;
             }
             let savedMovies = await prisma.savedMovie.findMany({
                 where: {
-                    userId: user.id,
+                    userId: +userID,
                 },
             });
             res.json(savedMovies);
         } catch {
             res.status(500).json({ err: "Internal database error" });
         }
+    } else {
+        res.status(401).json({ err: "No user id provided" });
     }
 });

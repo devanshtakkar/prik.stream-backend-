@@ -8,13 +8,13 @@ import {
     BackendErr,
     RecommendPostReq,
     GptRecommendResponse,
-    GptSuggestedMovie
+    GptSuggestedMovie,
 } from "./Types";
 import OpenAI from "openai";
 import { PrismaClient } from "@prisma/client";
 import { app as userRouter } from "./routes/user";
 
-export const prisma = new PrismaClient()
+export const prisma = new PrismaClient();
 
 type EnvVar = typeof process.env;
 interface EnvironmentVariables extends EnvVar {
@@ -105,7 +105,7 @@ app.post("/recommend", async (req, res) => {
                 {
                     role: "system",
                     content:
-                        'You are an AI assistant who who will help the users find the movies based on the reference movie they provide and what part of the movie they like, it could be anything ranging from similar theme, characters and their objective, plot, tone, pace, atmosphere, animation, symbolism, protagonist or antagonist. And provide the output in JSON format. It will contain properties such as "movie", "brief reason", "genre" and "year". The reasoning for chosing that particular movie can be around 100 words long. Moreover, if the user input is irrelevant like you are unable to relate to how it is relevent for the suggestion or clearly gibrish return a JSON object that contains a property "err" saying something along the lines that use input is invalid. keep the suggested movies count limited to 4',
+                        'You are an AI assistant who who will help the users find the movies based on the reference movie they provide and what part of the movie they like, it could be anything ranging from similar theme, characters and their objective, plot, tone, pace, atmosphere, animation, symbolism, protagonist or antagonist. And provide the output in JSON format. The name of the json property which has the movie array must be nammed "suggestions" It will contain properties such as "movie", "brief reason", "genre" and "year". The reasoning for chosing that particular movie can be around 100 words long. Moreover, if the user input is irrelevant like you are unable to relate to how it is relevent for the suggestion or clearly gibrish return a JSON object that contains a property "err" saying something along the lines that use input is invalid. keep the suggested movies count limited to 4',
                 },
                 {
                     role: "user",
@@ -132,13 +132,14 @@ app.post("/recommend", async (req, res) => {
             let parsedResult: GptRecommendResponse | BackendErr =
                 JSON.parse(result);
             if ("err" in parsedResult) {
-                console.log(parsedResult)
+                console.log(parsedResult);
                 res.status(401).json(parsedResult);
                 return;
             }
 
             //search OMDb for the given movie titles
 
+            console.log(parsedResult);
             const fetchPromises = parsedResult.suggestions.map((suggestion) => {
                 // console.log(suggestion.movie)
                 let params = new URLSearchParams({
@@ -155,13 +156,20 @@ app.post("/recommend", async (req, res) => {
 
             let finalResults = data.map((movie) => {
                 // console.log(movie.Title)
-                let matchingMovie = parsedResult.suggestions.find((suggestion) => suggestion.movie.toLowerCase() == movie.Title.toLowerCase());
+                let matchingMovie = parsedResult.suggestions.find(
+                    (suggestion) =>
+                        suggestion.movie.toLowerCase() ==
+                        movie.Title?.toLowerCase()
+                );
                 // console.log(matchingMovie)
-                let result: GptSuggestedMovie = {...movie, 'brief_reason': matchingMovie!["brief reason"]};
-                console.log(result)
-                // console.log(result)
-                return result;
-            })
+                if (matchingMovie) {
+                    let result: GptSuggestedMovie = {
+                        ...movie,
+                        brief_reason: matchingMovie!["brief reason"],
+                    };
+                    return result;
+                }
+            });
             res.json(finalResults);
             return;
         }
