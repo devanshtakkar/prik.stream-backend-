@@ -23,6 +23,7 @@ interface EnvironmentVariables extends EnvVar {
 }
 const omdbUrl = "http://www.omdbapi.com";
 let envVariables = process.env as EnvironmentVariables;
+console.log(envVariables)
 
 const openai = new OpenAI({
     apiKey: envVariables.OPENAI,
@@ -60,6 +61,7 @@ app.get("/search", async (req, res) => {
     const urlParams = new URLSearchParams(params);
     const urlWithParams = `${omdbUrl}?${urlParams.toString()}`;
     console.log(urlWithParams);
+    console.log(envVariables.OPENAI)
 
     try {
         let response = await fetch(urlWithParams);
