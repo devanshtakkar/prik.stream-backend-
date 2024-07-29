@@ -62,6 +62,9 @@ app.get("/search", async (req, res) => {
 
     try {
         let response = await fetch(urlWithParams);
+        let body = await response.json();
+        res.json(body);
+        return;
         if (response.ok) {
             let body: OMDbSearch = await response.json();
             //get the movie abstract from the omdb as well
