@@ -45,8 +45,7 @@ app.get("/search", async (req, res) => {
         return;
     }
 
-    let omdbkey = envVariables.OMDB_Key as string;
-    console.log(omdbkey)
+    let omdbkey = envVariables.OMDB_KEY as string;
     const params: {
         s: string;
         apikey: string;
@@ -63,15 +62,15 @@ app.get("/search", async (req, res) => {
     }
     const urlParams = new URLSearchParams(params);
     const urlWithParams = `${omdbUrl}?${urlParams.toString()}`;
-    console.log(urlWithParams);
-    console.log(envVariables.OPENAI)
-    console.log(envVariables.OMDB_KEY)
+    // console.log(urlWithParams);
+    // console.log(envVariables.OPENAI)
+    // console.log(envVariables.OMDB_KEY)
 
     try {
         let response = await fetch(urlWithParams);
-        let body = await response.json();
-        res.json(body);
-        return;
+        // let body = await response.json();
+        // res.json(body);
+        // return;
         if (response.ok) {
             let body: OMDbSearch = await response.json();
             //get the movie abstract from the omdb as well
