@@ -62,6 +62,7 @@ app.get("/search", async (req, res) => {
     const urlWithParams = `${omdbUrl}?${urlParams.toString()}`;
     console.log(urlWithParams);
     console.log(envVariables.OPENAI)
+    console.log(envVariables.OMDB_KEY)
 
     try {
         let response = await fetch(urlWithParams);
