@@ -46,6 +46,7 @@ app.get("/search", async (req, res) => {
     }
 
     let omdbkey = envVariables.OMDB_Key as string;
+    console.log(omdbkey)
     const params: {
         s: string;
         apikey: string;
