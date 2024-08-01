@@ -44,7 +44,6 @@ app.post("/movie", async (req, res) => {
                     email: validatedEmail,
                 },
             });
-            console.log(user);
             if (!user) {
                 let newSave = await prisma.user.create({
                     data: {
@@ -59,6 +58,7 @@ app.post("/movie", async (req, res) => {
                                 year: movie.Year,
                                 brief_reason: movie.brief_reason,
                                 imdbID: movie.imdbID,
+                                genre: movie.Genre
                             },
                         },
                     },
@@ -79,6 +79,7 @@ app.post("/movie", async (req, res) => {
                         brief_reason: movie.brief_reason,
                         imdbID: movie.imdbID,
                         userId: user.id,
+                        genre: movie.Genre
                     },
                 });
                 res.status(201).json(newSave);
